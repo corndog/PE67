@@ -1,5 +1,11 @@
-object PE67 extends App { // just to run it if you like
+import java.io._
+import scala.io._
 
+// more of an experiment in making illegal states unrepresentable
+
+object PE67  extends App { // just to run it if you like
+
+  // only make an object if the data is valid
   object NumberTriangle {
     def apply(numbers: Seq[Int]) = {
       if ( math.sqrt( 8 * numbers.size + 1 ).isValidInt)
@@ -10,22 +16,24 @@ object PE67 extends App { // just to run it if you like
   }
   
   class NumberTriangle private(val nums: Seq[Int]) {
+    val numbers = nums
+    lazy val triangle: Seq[Seq[Int]] = triangularize(this)
     lazy val maxPath: Int =
-      triangularize
+      triangle
         .reduceLeft( (bottom, top) => AdjacentLevels(bottom, top).reduceLevel )
 	.head
+  }
+  
+  def triangularize(triangle: NumberTriangle): Seq[Seq[Int]] = {
     
-    private def triangularize: Seq[Seq[Int]] = {
-    
-      def _triangularize(takeSize:Int, rest: Seq[Int], acc: Seq[Seq[Int]]): Seq[Seq[Int]] = {
-        if (rest.size == takeSize)
-          rest +: acc
-        else
-          _triangularize(takeSize + 1, rest.drop(takeSize), rest.take(takeSize) +: acc)
-      }
-    
-      _triangularize(1, nums, Seq[Seq[Int]]())
+    def _triangularize(takeSize:Int, rest: Seq[Int], acc: Seq[Seq[Int]]): Seq[Seq[Int]] = {
+      if (rest.size == takeSize)
+        rest +: acc
+      else
+        _triangularize(takeSize + 1, rest.drop(takeSize), rest.take(takeSize) +: acc)
     }
+    
+    _triangularize(1, triangle.numbers, Seq[Seq[Int]]())
   }
 
   object AdjacentLevels {
@@ -44,11 +52,22 @@ object PE67 extends App { // just to run it if you like
   
   // fetch raw data one way or another
   def fromFile(fName: String): Seq[Int] =
-    scala.io.Source.fromFile(fName).mkString.split("\\s+").map(_.toInt)
+    scala.io.Source.fromFile(fName).mkString.split("\\s+").flatMap(s => if (s == "") Seq() else Seq( s.toInt) )
   
   def pe67(nums: Seq[Int]) = NumberTriangle(nums).maxPath
   
-  // example usage
-  val egNums = Seq(9, 2, 1, 1, 5, 7, 9, 5, 3, 3)
-  println(pe67(egNums))
+  def writeTriangleToFile = {
+    val tr = triangularize( NumberTriangle( fromFile("generated_triangle.txt") ) )
+    val strOutput = tr.reverse.map( _.mkString(" ")).mkString("\n")
+    val out = new PrintWriter("bigTriangle.txt", "UTF-8") 
+    out.print(strOutput)
+    out.flush
+    out.close
+  }
+  
+  val start = System.currentTimeMillis
+  val egNums = fromFile("bigNums.txt")
+  val res = pe67(egNums)
+  val end = System.currentTimeMillis
+  println(res + " \n TOOK " + (end - start))
 }
