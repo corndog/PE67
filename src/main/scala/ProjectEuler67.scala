@@ -1,6 +1,7 @@
 object ProjectEuler67 {
   // this is a somewhat minimalist but still functional-style version
   
+  // collapse the bottom two lines into one
   def reduceLevel(bottom: Seq[Int], top: Seq[Int]): Seq[Int] = {
     if (bottom.size - top.size != 1) {
       println("input file could not be turned be turned into a number triangle")
@@ -10,21 +11,17 @@ object ProjectEuler67 {
   }
 
   def toListOfNumbers(str: String): Seq[Int] = str.split("\\s+").toList.map(_.toInt)
-  
-  def main(args: Array[String]) = {
-    if (args.size == 0) {
-      println("Enter name of file containing number triangle")
-    }
-    else {
-      val start = System.currentTimeMillis
-      val numberTriangle = 
-        scala.io.Source.fromFile(args(0))
-        .getLines()
-        .foldLeft(Seq[Seq[Int]]()){ (triangle, line) => toListOfNumbers(line) +: triangle }
 
-      val maxPath = numberTriangle.reduceLeft(reduceLevel(_, _)).head
-      val end = System.currentTimeMillis
-      println(maxPath + " \n TOOK " + (end - start))
-    }
+  // bottom-line-first Seq[Seq[Int]]
+  def toNumberTriangle(lines: Seq[String]): Seq[Seq[Int]] = 
+    lines.foldLeft(Seq[Seq[Int]]()){ (triangle, line) => toListOfNumbers(line) +: triangle }
+  
+  def apply(fileName: String) = {
+    val start = System.currentTimeMillis
+    val lines = scala.io.Source.fromFile(fileName).getLines().toSeq
+    val numberTriangle = toNumberTriangle(lines)
+    val maxPath = numberTriangle.reduceLeft(reduceLevel(_, _)).head
+    val end = System.currentTimeMillis
+    println(maxPath + " \n TOOK " + (end - start))
   }
 }
