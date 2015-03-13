@@ -19,13 +19,16 @@ object ProjectEuler67 {
   
   def apply(fileName: String) = {
     val start = System.currentTimeMillis
-    Try(scala.io.Source.fromFile(fileName).getLines().toSeq) match {
-      case Success(lines) => { 
-        val maxPath = toNumberTriangle(lines).reduceLeft(reduceLevel(_, _)).head
-        val end = System.currentTimeMillis
-        println(maxPath + " \n TOOK " + (end - start))
-      }
+
+    val result: Try[Int] = for {
+      lines <-  Try(scala.io.Source.fromFile(fileName).getLines().toSeq)
+      result <- Try(toNumberTriangle(lines).reduceLeft(reduceLevel(_, _)).head)
+    } yield result
+
+    result match {
+      case Success(maxPath) => println(maxPath + "\nTOOK " + (System.currentTimeMillis - start))
       case Failure(ex: java.io.FileNotFoundException) => println(s"""File "$fileName" not found""")
+      case Failure(ex: java.lang.UnsupportedOperationException) => println("File appears to be empty")
       case Failure(NonFatal(ex)) => println(ex.getMessage)
     }
   }
