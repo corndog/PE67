@@ -1,6 +1,7 @@
+import scala.util._
+import scala.util.control.NonFatal
+
 object ProjectEuler67 {
-  // this is a somewhat minimalist but still functional-style version
-  
   // collapse the bottom two lines into one
   def reduceLevel(bottom: Seq[Int], top: Seq[Int]): Seq[Int] = {
     if (bottom.size - top.size != 1) {
@@ -18,10 +19,14 @@ object ProjectEuler67 {
   
   def apply(fileName: String) = {
     val start = System.currentTimeMillis
-    val lines = scala.io.Source.fromFile(fileName).getLines().toSeq
-    val numberTriangle = toNumberTriangle(lines)
-    val maxPath = numberTriangle.reduceLeft(reduceLevel(_, _)).head
-    val end = System.currentTimeMillis
-    println(maxPath + " \n TOOK " + (end - start))
+    Try(scala.io.Source.fromFile(fileName).getLines().toSeq) match {
+      case Success(lines) => { 
+        val maxPath = toNumberTriangle(lines).reduceLeft(reduceLevel(_, _)).head
+        val end = System.currentTimeMillis
+        println(maxPath + " \n TOOK " + (end - start))
+      }
+      case Failure(ex: java.io.FileNotFoundException) => println(s"""File "$fileName" not found""")
+      case Failure(NonFatal(ex)) => println(ex.getMessage)
+    }
   }
 }
