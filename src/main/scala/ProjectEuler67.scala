@@ -22,8 +22,8 @@ object ProjectEuler67 {
 
     val result: Try[Int] = for {
       lines <-  Try(scala.io.Source.fromFile(fileName).getLines().toSeq)
-      result <- Try(toNumberTriangle(lines).reduceLeft(reduceLevel(_, _)).head)
-    } yield result
+      max <- Try(toNumberTriangle(lines).reduceLeft(reduceLevel(_, _)).head)
+    } yield max
 
     result match {
       case Success(maxPath) => println(maxPath + "\nTOOK " + (System.currentTimeMillis - start))
